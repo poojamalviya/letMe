@@ -49,7 +49,7 @@ app.get('/user/show/all', function(req, res) {
 			if (err) {
 				error.sendError("dbError", res, err)
 			};
-			return resolve(res.send(result));
+			return (res.send(result));
 		})
 	})
 });
@@ -66,7 +66,7 @@ app.get('/user/show/:firstName', function(req, res) {
 			if (!result || _.isEmpty(result)) {
 				error.sendError("badRequest", res, "not found in db")
 			};
-			return resolve(res.send(result));
+			return (res.send(result));
 		})
 	})
 });
@@ -83,7 +83,7 @@ app.delete('/user/delete/:firstName', function(req, res) {
 			if (!result || _.isEmpty(result)) {
 				error.sendError("badRequest", res, "not deleted")
 			};
-			return resolve(res.send(result));
+			return (res.send(result));
 		})
 	})
 });
@@ -100,7 +100,7 @@ app.put('/user/update/:firstName', function(req, res) {
 			if (!result || _.isEmpty(result)) {
 				error.sendError("badRequest", res, "not deleted")
 			};
-			return resolve(res.send(result));
+			return (res.send(result));
 		})
 	});
 });
