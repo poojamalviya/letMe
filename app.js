@@ -1,16 +1,15 @@
 var express = require('express'),
 	Promise = require('bluebird'),
 	app = express(),
-	mongo = require('mongodb').MongoClient,
 	assert = require('assert'),
 	_ = require('lodash'),
 	format = require('util').format,
 	pn = require('node-pushnotifications'),
-	url = 'mongodb://localhost:27017/prac',
 	xmpp = require('node-xmpp'),
 	oscar = require('oscar'),
 	util = require('util'),
 	error = require('./error'),
+	db = require('./db'),
 	bodyParser = require('body-parser');
 
 app.use(bodyParser.json());
@@ -27,82 +26,32 @@ app.post('/user/add', function(req, res, next) {
 	if (!req.body || !req.body.firstName || !req.body.lastName || !req.body.gender) {
 		error.sendError("badRequest", res, "firstName, lastName and gender is required")
 	};
-	mongo.connect(url, function(err, db) {
-		if (err) {
-			error.sendError("dbConnection", res, err)
-		};
-		db.collection('user').insertOne(req.body, function(err, result) {
-			if (err) {
-				error.sendError("dbError", res, err)
-			};
-			return (res.send(req.body));
-		})
-	})
+	return db.insertOne('user', req.body, res);
 });
 
 app.get('/user/show/all', function(req, res) {
-	mongo.connect(url, function(err, db) {
-		if (err) {
-			error.sendError("dbConnection", res, err)
-		};
-		db.collection('user').find().toArray(function(err, result) {
-			if (err) {
-				error.sendError("dbError", res, err)
-			};
-			return (res.send(result));
-		})
-	})
+	return db.findAll('user', res);
 });
 
 app.get('/user/show/:firstName', function(req, res) {
-	mongo.connect(url, function(err, db) {
-		if (err) {
-			error.sendError("dbConnection", res, err)
-		};
-		db.collection('user').findOne(req.params, function(err, result) {
-			if (err) {
-				error.sendError("dbError", res, err)
-			};
-			if (!result || _.isEmpty(result)) {
-				error.sendError("badRequest", res, "not found in db")
-			};
-			return (res.send(result));
-		})
-	})
+	if (!req.params || _.isEmpty(req.params)) {
+		error.sendError("badRequest", res, "provide name to search")
+	}
+	return db.findOne('user', req.params, res);
 });
 
 app.delete('/user/delete/:firstName', function(req, res) {
-	mongo.connect(url, function(err, db) {
-		if (err) {
-			error.sendError("dbConnection", res, err)
-		};
-		db.collection('user').deleteOne(req.params, function(err, result) {
-			if (err) {
-				error.sendError("dbError", res, err)
-			};
-			if (!result || _.isEmpty(result)) {
-				error.sendError("badRequest", res, "not deleted")
-			};
-			return (res.send(result));
-		})
-	})
+	if (!req.params || _.isEmpty(req.params)) {
+		error.sendError("badRequest", res, "provide name to delete")
+	}
+	return db.deleteOne('user', req.params, res);
 });
 
 app.put('/user/update/:firstName', function(req, res) {
-	mongo.connect(url, function(err, db) {
-		if (err) {
-			error.sendError("dbConnection", res, err)
-		};
-		db.collection('user').update(req.params, req.body, function(err, result) {
-			if (err) {
-				error.sendError("dbError", res, err)
-			};
-			if (!result || _.isEmpty(result)) {
-				error.sendError("badRequest", res, "not deleted")
-			};
-			return (res.send(result));
-		})
-	});
+	if (!req.params || _.isEmpty(req.params)) {
+		error.sendError("badRequest", res, "provide name to update")
+	}
+	return db.updateOne('user', req, res);
 });
 
 
